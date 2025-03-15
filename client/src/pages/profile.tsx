@@ -112,6 +112,17 @@ const Profile = () => {
   // Fetch current user
   const { data: user, isLoading: userLoading, error: userError } = useQuery<User>({
     queryKey: ['/api/user'],
+    queryFn: async () => {
+      try {
+        const response = await apiRequest('GET', '/api/user');
+        return await response.json();
+      } catch (error) {
+        console.error("Error fetching user:", error);
+        // Redirect to login
+        setLocation('/login');
+        return null;
+      }
+    },
   });
   
   // If not logged in or error loading user, redirect to login
@@ -128,15 +139,16 @@ const Profile = () => {
       try {
         console.log("Fetching skills for user:", user.id);
         const response = await apiRequest('GET', `/api/skills/user/${user.id}`);
-        console.log("Skills response:", response);
+        const skillsData = await response.json();
+        console.log("Skills response data:", skillsData);
         // Ensure we're returning an array of skills
-        return Array.isArray(response) ? response : [];
+        return Array.isArray(skillsData) ? skillsData : [];
       } catch (error) {
         console.error("Error fetching skills:", error);
         return [];
       }
     },
-    enabled: !!user,
+    enabled: !!user?.id, // Only run query when user ID is available
   });
   
   // Add new skill mutation
