@@ -187,7 +187,12 @@ export class MemStorage implements IStorage {
 
   async createSkill(insertSkill: InsertSkill): Promise<Skill> {
     const id = this.currentSkillId++;
-    const skill: Skill = { ...insertSkill, id, createdAt: new Date() };
+    const skill: Skill = { 
+      ...insertSkill, 
+      id, 
+      createdAt: new Date(),
+      validatedBy: null // Add the missing validatedBy field with null value
+    };
     this.skills.set(id, skill);
     return skill;
   }
