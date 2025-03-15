@@ -127,10 +127,9 @@ const Profile = () => {
       if (!user?.id) return [];
       try {
         console.log("Fetching skills for user:", user.id);
-        const response = await apiRequest('GET', `/api/skills/user/${user.id}`);
-        console.log("Skills response:", response);
-        // Ensure we're returning an array of skills
-        return Array.isArray(response) ? response : [];
+        const skillData = await apiRequest<Skill[]>('GET', `/api/skills/user/${user.id}`);
+        console.log("Skills response:", skillData);
+        return skillData || [];
       } catch (error) {
         console.error("Error fetching skills:", error);
         return [];
@@ -142,9 +141,10 @@ const Profile = () => {
   // Add new skill mutation
   const addSkillMutation = useMutation({
     mutationFn: async (skillData: NewSkill) => {
-      return await apiRequest('POST', '/api/skills', skillData);
+      return await apiRequest<Skill>('POST', '/api/skills', skillData);
     },
-    onSuccess: () => {
+    onSuccess: (newSkill) => {
+      console.log("Successfully added skill:", newSkill);
       toast({
         title: "Skill added",
         description: "Your skill has been added successfully.",
@@ -175,7 +175,7 @@ const Profile = () => {
   // Logout mutation
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest('POST', '/api/logout');
+      return await apiRequest<{message: string}>('POST', '/api/logout');
     },
     onSuccess: () => {
       toast({
