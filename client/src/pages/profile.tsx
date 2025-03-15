@@ -122,12 +122,19 @@ const Profile = () => {
   
   // Fetch user skills
   const { data: skills, isLoading: skillsLoading } = useQuery<Skill[]>({
-    queryKey: ['/api/skills/user'],
+    queryKey: ['/api/skills/user', user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      const response = await apiRequest('GET', `/api/skills/user/${user.id}`);
-      // Ensure we're returning an array of skills
-      return Array.isArray(response) ? response : [];
+      try {
+        console.log("Fetching skills for user:", user.id);
+        const response = await apiRequest('GET', `/api/skills/user/${user.id}`);
+        console.log("Skills response:", response);
+        // Ensure we're returning an array of skills
+        return Array.isArray(response) ? response : [];
+      } catch (error) {
+        console.error("Error fetching skills:", error);
+        return [];
+      }
     },
     enabled: !!user,
   });
@@ -153,8 +160,8 @@ const Profile = () => {
       });
       setShowNewSkillForm(false);
       
-      // Refresh skills list
-      queryClient.invalidateQueries({ queryKey: ['/api/skills/user'] });
+      // Refresh skills list with the correct query key including user ID
+      queryClient.invalidateQueries({ queryKey: ['/api/skills/user', user?.id] });
     },
     onError: (error) => {
       toast({
@@ -558,7 +565,15 @@ const Profile = () => {
                       </svg>
                       <h3 className="text-lg font-medium text-gray-700">No education history added yet</h3>
                       <p className="text-gray-500 mt-1">Add your education details to complete your profile</p>
-                      <Button className="mt-4 bg-[#006A4E] hover:bg-[#00563F]">
+                      <Button 
+                        className="mt-4 bg-[#006A4E] hover:bg-[#00563F]"
+                        onClick={() => {
+                          toast({
+                            title: "Coming Soon",
+                            description: "Education management feature will be available soon."
+                          });
+                        }}
+                      >
                         Add Education
                       </Button>
                     </div>
@@ -588,7 +603,15 @@ const Profile = () => {
                       </svg>
                       <h3 className="text-lg font-medium text-gray-700">No certifications added yet</h3>
                       <p className="text-gray-500 mt-1">Add certifications to showcase your qualifications and expertise</p>
-                      <Button className="mt-4 bg-[#006A4E] hover:bg-[#00563F]">
+                      <Button 
+                        className="mt-4 bg-[#006A4E] hover:bg-[#00563F]"
+                        onClick={() => {
+                          toast({
+                            title: "Coming Soon",
+                            description: "Certification management feature will be available soon."
+                          });
+                        }}
+                      >
                         Add Certification
                       </Button>
                     </div>
