@@ -122,7 +122,13 @@ const Profile = () => {
   
   // Fetch user skills
   const { data: skills, isLoading: skillsLoading } = useQuery<Skill[]>({
-    queryKey: ['/api/skills/user', user?.id],
+    queryKey: ['/api/skills/user'],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const response = await apiRequest('GET', `/api/skills/user/${user.id}`);
+      // Ensure we're returning an array of skills
+      return Array.isArray(response) ? response : [];
+    },
     enabled: !!user,
   });
   
@@ -148,7 +154,7 @@ const Profile = () => {
       setShowNewSkillForm(false);
       
       // Refresh skills list
-      queryClient.invalidateQueries({ queryKey: ['/api/skills/user', user?.id] });
+      queryClient.invalidateQueries({ queryKey: ['/api/skills/user'] });
     },
     onError: (error) => {
       toast({
@@ -277,7 +283,7 @@ const Profile = () => {
                     </div>
                     <div className="flex items-center text-gray-600">
                       <MapPin className="h-4 w-4 mr-2" />
-                      <span>{user?.district.charAt(0).toUpperCase() + user?.district.slice(1)}</span>
+                      <span>{user?.district ? user.district.charAt(0).toUpperCase() + user.district.slice(1) : ""}</span>
                     </div>
                   </div>
                 </div>
