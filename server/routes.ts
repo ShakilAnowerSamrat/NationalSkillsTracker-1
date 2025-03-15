@@ -164,8 +164,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const skills = await storage.getUserSkills(userId);
+      console.log(`[server] GET /api/skills/user/${userId} - Skills found:`, skills);
       res.json(skills);
     } catch (error) {
+      console.error(`[server] Error fetching skills for user ${req.params.userId}:`, error);
       res.status(500).json({ message: "Internal server error" });
     }
   });
@@ -174,13 +176,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/skills", async (req: Request, res: Response) => {
     try {
       if (!req.isAuthenticated()) {
+        console.log('[server] POST /api/skills - Not authenticated');
         return res.status(401).json({ message: "Not authenticated" });
       }
       
+      console.log('[server] POST /api/skills - Request body:', req.body);
+      
       const skillData = insertSkillSchema.parse(req.body);
+      console.log('[server] POST /api/skills - Validated data:', skillData);
+      
       const skill = await storage.createSkill(skillData);
+      console.log('[server] POST /api/skills - Created skill:', skill);
+      
       res.status(201).json(skill);
     } catch (error) {
+      console.error('[server] POST /api/skills - Error:', error);
       if (error instanceof ZodError) {
         return res.status(400).json({ 
           message: "Validation error", 
