@@ -19,7 +19,7 @@ import MemoryStore from "memorystore";
 export async function registerRoutes(app: Express): Promise<Server> {
   // Define a session store
   const SessionStore = MemoryStore(session);
-
+  
   // Configure session middleware
   app.use(
     session({
@@ -29,27 +29,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       secret: process.env.SESSION_SECRET || "national-skills-database-secret",
       resave: false,
       saveUninitialized: false,
-      cookie: { secure: process.env.NODE_ENV === "production" }
+      cookie: { 
+        secure: process.env.NODE_ENV === "production",
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        sameSite: 'lax',
+        httpOnly: true
+      },
+      name: 'nsdb.sid' // Custom session name to avoid conflicts
     })
   );
+  
+  console.log('[server] Session middleware configured');
 
   // Initialize Passport
   app.use(passport.initialize());
   app.use(passport.session());
+  
+  console.log('[server] Passport initialized');
 
   // Configure Passport local strategy
   passport.use(
     new LocalStrategy(async (username, password, done) => {
       try {
+        console.log(`[auth] Authenticating user: ${username}`);
         const user = await storage.getUserByUsername(username);
+        
         if (!user) {
+          console.log(`[auth] User not found: ${username}`);
           return done(null, false, { message: "Incorrect username." });
         }
+        
         if (user.password !== password) {
+          console.log(`[auth] Invalid password for user: ${username}`);
           return done(null, false, { message: "Incorrect password." });
         }
+        
+        console.log(`[auth] Authentication successful for user: ${username}`);
         return done(null, user);
       } catch (err) {
+        console.error(`[auth] Authentication error:`, err);
         return done(err);
       }
     })
@@ -57,14 +75,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Serialize and deserialize user
   passport.serializeUser<number>((user: Express.User, done) => {
+    console.log(`[auth] Serializing user:`, (user as any).id);
     done(null, (user as any).id);
   });
 
   passport.deserializeUser<number>(async (id, done) => {
     try {
+      console.log(`[auth] Deserializing user ID: ${id}`);
       const user = await storage.getUser(id);
+      
+      if (!user) {
+        console.log(`[auth] Failed to deserialize - user not found for ID: ${id}`);
+        return done(null, false);
+      }
+      
+      console.log(`[auth] Deserialized user: ${user.username}`);
       done(null, user as any);
     } catch (err) {
+      console.error(`[auth] Deserialization error:`, err);
       done(err);
     }
   });
@@ -111,10 +139,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post(
     "/api/login",
     (req: Request, res: Response, next) => {
+      console.log('[server] Login request received:', { username: req.body.username });
       try {
         loginSchema.parse(req.body);
+        console.log('[server] Login data validated');
         next();
       } catch (error) {
+        console.error('[server] Login validation error:', error);
         if (error instanceof ZodError) {
           return res.status(400).json({ 
             message: "Validation error", 
@@ -124,13 +155,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         next(error);
       }
     },
-    passport.authenticate("local"),
-    (req: Request, res: Response) => {
-      const { password, ...userWithoutPassword } = req.user as any;
-      res.json({ 
-        message: "Login successful", 
-        user: userWithoutPassword 
-      });
+    (req: Request, res: Response, next) => {
+      passport.authenticate("local", (err: any, user: any, info: any) => {
+        console.log('[server] Passport authenticate result:', { err: !!err, user: !!user, info });
+        
+        if (err) {
+          console.error('[server] Authentication error:', err);
+          return next(err);
+        }
+        
+        if (!user) {
+          console.log('[server] Authentication failed:', info);
+          return res.status(401).json({ message: info?.message || "Authentication failed" });
+        }
+        
+        req.logIn(user, (loginErr) => {
+          if (loginErr) {
+            console.error('[server] Login error:', loginErr);
+            return next(loginErr);
+          }
+          
+          console.log('[server] User logged in successfully:', user.id);
+          const { password, ...userWithoutPassword } = user;
+          return res.json({ 
+            message: "Login successful", 
+            user: userWithoutPassword 
+          });
+        });
+      })(req, res, next);
     }
   );
 
@@ -146,9 +198,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Get current user
   app.get("/api/user", (req: Request, res: Response) => {
+    console.log('[server] GET /api/user - Session ID:', req.sessionID);
+    console.log('[server] GET /api/user - Is authenticated:', req.isAuthenticated());
+    
     if (!req.isAuthenticated()) {
+      console.log('[server] GET /api/user - No authenticated user found');
       return res.status(401).json({ message: "Not authenticated" });
     }
+    
+    console.log('[server] GET /api/user - User found:', (req.user as any).id);
     const { password, ...userWithoutPassword } = req.user as any;
     res.json(userWithoutPassword);
   });

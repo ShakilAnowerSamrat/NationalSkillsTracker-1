@@ -49,23 +49,32 @@ const Login = () => {
   // Login mutation
   const mutation = useMutation({
     mutationFn: async (data: FormValues) => {
-      return await apiRequest('POST', '/api/login', data);
+      console.log('Logging in with:', { username: data.username, password: '[REDACTED]' });
+      const response = await apiRequest('POST', '/api/login', data);
+      console.log('Login response status:', response.status);
+      return response;
     },
     onSuccess: async (response) => {
-      const data = await response.json();
-      
-      toast({
-        title: "Login successful!",
-        description: "You have been logged in successfully.",
-      });
-      
-      // Invalidate user query to refresh user data
-      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
-      
-      // Redirect to home page
-      setLocation('/');
+      try {
+        const data = await response.json();
+        console.log('Login successful:', data);
+        
+        toast({
+          title: "Login successful!",
+          description: "You have been logged in successfully.",
+        });
+        
+        // Invalidate user query to refresh user data
+        queryClient.invalidateQueries({ queryKey: ['/api/user'] });
+        
+        // Redirect to profile page so user can add skills
+        setLocation('/profile');
+      } catch (error) {
+        console.error('Error parsing login response:', error);
+      }
     },
     onError: (error) => {
+      console.error('Login error:', error);
       toast({
         title: "Login failed",
         description: "Invalid username or password. Please try again.",
