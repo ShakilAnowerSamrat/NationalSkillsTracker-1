@@ -39,7 +39,7 @@ const UserPortal = () => {
 
             {user ? (
               // If user is logged in, show appropriate portal based on user type
-              <Tabs defaultValue={user.userType || "citizen"} className="w-full">
+              <Tabs defaultValue={user && user.userType ? user.userType : "citizen"} className="w-full">
                 <TabsList className="grid w-full grid-cols-3 mb-8">
                   <TabsTrigger value="government">Government</TabsTrigger>
                   <TabsTrigger value="employer">Employer</TabsTrigger>
@@ -67,7 +67,7 @@ const UserPortal = () => {
                           </div>
                         </Link>
                         
-                        <Link href="#" className="block p-4 border rounded-lg hover:bg-gray-50 transition flex items-start">
+                        <Link href="/data-insights" className="block p-4 border rounded-lg hover:bg-gray-50 transition flex items-start">
                           <FileText className="h-6 w-6 mr-3 text-[#006A4E]" />
                           <div>
                             <h3 className="font-bold text-gray-800">Policy Recommendations</h3>
@@ -75,7 +75,7 @@ const UserPortal = () => {
                           </div>
                         </Link>
                         
-                        <Link href="#" className="block p-4 border rounded-lg hover:bg-gray-50 transition flex items-start">
+                        <Link href="/data-insights" className="block p-4 border rounded-lg hover:bg-gray-50 transition flex items-start">
                           <Search className="h-6 w-6 mr-3 text-[#006A4E]" />
                           <div>
                             <h3 className="font-bold text-gray-800">Skills Gap Analysis</h3>
@@ -83,7 +83,7 @@ const UserPortal = () => {
                           </div>
                         </Link>
                         
-                        <Link href="#" className="block p-4 border rounded-lg hover:bg-gray-50 transition flex items-start">
+                        <Link href="/data-insights" className="block p-4 border rounded-lg hover:bg-gray-50 transition flex items-start">
                           <Award className="h-6 w-6 mr-3 text-[#006A4E]" />
                           <div>
                             <h3 className="font-bold text-gray-800">Training Program Management</h3>
@@ -113,7 +113,7 @@ const UserPortal = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <Link href="#" className="block p-4 border rounded-lg hover:bg-gray-50 transition flex items-start">
+                        <Link href="/profile" className="block p-4 border rounded-lg hover:bg-gray-50 transition flex items-start">
                           <Search className="h-6 w-6 mr-3 text-[#006A4E]" />
                           <div>
                             <h3 className="font-bold text-gray-800">Talent Search</h3>
@@ -121,7 +121,7 @@ const UserPortal = () => {
                           </div>
                         </Link>
                         
-                        <Link href="#" className="block p-4 border rounded-lg hover:bg-gray-50 transition flex items-start">
+                        <Link href="/profile" className="block p-4 border rounded-lg hover:bg-gray-50 transition flex items-start">
                           <FileText className="h-6 w-6 mr-3 text-[#006A4E]" />
                           <div>
                             <h3 className="font-bold text-gray-800">Post Job Openings</h3>
@@ -129,7 +129,7 @@ const UserPortal = () => {
                           </div>
                         </Link>
                         
-                        <Link href="#" className="block p-4 border rounded-lg hover:bg-gray-50 transition flex items-start">
+                        <Link href="/data-insights" className="block p-4 border rounded-lg hover:bg-gray-50 transition flex items-start">
                           <BarChart2 className="h-6 w-6 mr-3 text-[#006A4E]" />
                           <div>
                             <h3 className="font-bold text-gray-800">Industry Insights</h3>
@@ -137,7 +137,7 @@ const UserPortal = () => {
                           </div>
                         </Link>
                         
-                        <Link href="#" className="block p-4 border rounded-lg hover:bg-gray-50 transition flex items-start">
+                        <Link href="/resources" className="block p-4 border rounded-lg hover:bg-gray-50 transition flex items-start">
                           <Award className="h-6 w-6 mr-3 text-[#006A4E]" />
                           <div>
                             <h3 className="font-bold text-gray-800">Training Partnerships</h3>
@@ -175,7 +175,7 @@ const UserPortal = () => {
                           </div>
                         </Link>
                         
-                        <Link href="#" className="block p-4 border rounded-lg hover:bg-gray-50 transition flex items-start">
+                        <Link href="/profile" className="block p-4 border rounded-lg hover:bg-gray-50 transition flex items-start">
                           <Search className="h-6 w-6 mr-3 text-[#006A4E]" />
                           <div>
                             <h3 className="font-bold text-gray-800">Job Matching</h3>
@@ -183,7 +183,7 @@ const UserPortal = () => {
                           </div>
                         </Link>
                         
-                        <Link href="#" className="block p-4 border rounded-lg hover:bg-gray-50 transition flex items-start">
+                        <Link href="/resources" className="block p-4 border rounded-lg hover:bg-gray-50 transition flex items-start">
                           <Award className="h-6 w-6 mr-3 text-[#006A4E]" />
                           <div>
                             <h3 className="font-bold text-gray-800">Training Recommendations</h3>
@@ -353,12 +353,16 @@ const UserPortal = () => {
                 If you need help with registration, data submission, or have questions about the National Skills Database, our support team is here to help.
               </p>
               <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <Button variant="outline" className="border-[#006A4E] text-[#006A4E]">
-                  View FAQ
-                </Button>
-                <Button className="bg-[#006A4E] hover:bg-[#00563F]">
-                  Contact Support
-                </Button>
+                <Link href="/resources">
+                  <Button variant="outline" className="border-[#006A4E] text-[#006A4E]">
+                    View FAQ
+                  </Button>
+                </Link>
+                <Link href="/about">
+                  <Button className="bg-[#006A4E] hover:bg-[#00563F]">
+                    Contact Support
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
